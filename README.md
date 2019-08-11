@@ -11,7 +11,7 @@ to your `composer.json` file:
 ```json
 {
     "require": {
-        "fab1en/rocket-chat-rest-client": "dev-master"
+        "nelsonko/rocket-chat-rest-client": "dev-master"
     }
 }
 ```
