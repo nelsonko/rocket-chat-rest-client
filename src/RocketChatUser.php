@@ -1,6 +1,6 @@
 <?php
 
-namespace RocketChat;
+namespace RocketChatsspp;
 
 use Httpful\Request;
 use RocketChat\Client;
@@ -8,13 +8,14 @@ use RocketChat\Client;
 class User extends Client {
 
 	public $username;
-	private $password;
+	public $password;
 	public $id;
 	public $nickname;
 	public $email;
 	public $customFields;
   
 	public function __construct($username, $password, $fields = array()){
+		\Feedback::success('Reached RocketChat condition');
 		parent::__construct();
 		$this->username = $username;
 		$this->password = $password;
@@ -33,7 +34,8 @@ class User extends Client {
 	* Authenticate with the REST API.
 	*/
 	public function login($save_auth = true) {
-		$response = Request::post( $this->api . 'login' )
+		\Feedback::success('Reached API login method');
+		/*$response = Request::post( $this->api . 'login' )
 			->body(array( 'user' => $this->username, 'password' => $this->password ))
 			->send();
 
@@ -49,7 +51,7 @@ class User extends Client {
 			return $response->body->data;
 		} else {
 			throw $this->createExceptionFromResponse($response, "Could not authenticate with the REST API");
-		}
+		}*/
 	}
 
 	/**
