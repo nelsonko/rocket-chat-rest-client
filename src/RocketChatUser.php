@@ -44,8 +44,7 @@ class User extends Client {
 	 * Authenticate with the REST API.
 	 */
 	public function login($save_auth = true) {
-		// $response = Request::post( $this->api . 'login' )
-		$response = Request::post( 'http://localhost:3000/api/v1/login' )
+		$response = Request::post( $this->api . 'login' )
 			->body(array( 'user' => $this->username, 'password' => $this->password ))
 			->send();
 		if( $response->code == 200 && isset($response->body->status) && $response->body->status == 'success' ) {
@@ -63,11 +62,6 @@ class User extends Client {
 		}
 	}
 
-	public function userid($uname) {
-		$response = Request::get( 'http://localhost:3000/api/v1/users.info?username=' . $uname )->send();
-		return $response->body->user->_id;
-	}
-
 	/**
 	 * Create a new user.
 	 * for customFields we have to send json-object so we use json_decode with inner json_encode
@@ -81,16 +75,14 @@ class User extends Client {
 		);
 		if (isset($this->customFields))
 			$bodydata['customFields'] = json_decode(json_encode($this->customFields), JSON_FORCE_OBJECT);
-//		$response = Request::post( $this->api . 'users.create' )
-		$response = Request::post( 'http://localhost:3000/api/v1/users.create' )
+		$response = Request::post( $this->api . 'users.create' )
 			->body($bodydata)
 			->send();
-//		echo json_encode($response);
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
-			$this->id = $response->body->user->_id;
-			return $response->body->user;
+//			$this->id = $response->body->user->_id;
+			return $response->body->user->_id;
 		} else {
-			echo( $response->body->error . "\n" );
+//			echo( $response->body->error . "\n" );
 			return false;
 		}
 	}
@@ -102,26 +94,19 @@ class User extends Client {
 	 */
 	public function update($rc_display_name, $rc_username, 	$id) {
 
-		// Update User
-		$response = Request::post( 'http://localhost:3000/api/v1/users.update' )
+		$response = Request::post( $this->api . 'users.update' )
 			->body(array(
 				'userId' => $id,
 				'data' => json_decode(json_encode(array('name' => $rc_display_name, 'username' => $rc_username), JSON_FORCE_OBJECT)),
+				//'data' => json_decode(json_encode(array('name' => $this->nickname,'email'=>$this->email,'username'=>$this->username,'password'=>$this->password), JSON_FORCE_OBJECT)),
 			))
 			->send();
-		return $response->body->success;
-		/*$response = Request::post( $this->api . 'users.update' )
-					->body(array(
-						'userId' => $this->id,
-						'data' => json_decode(json_encode(array('name' => $this->nickname,'email'=>$this->email,'username'=>$this->username,'password'=>$this->password), JSON_FORCE_OBJECT)),
-					))
-					->send();*/
-		/*if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			$this->id = $response->body->user->_id;
 			return $response->body->user;
 		} else {
 			throw $this->createExceptionFromResponse($response, "Could not create new user");
-		}*/
+		}
 	}
 
 	/**
@@ -132,11 +117,7 @@ class User extends Client {
 		/*if( !isset($this->id) ){
 			$this->me();
 		}*/
-//		$response = Request::post( $this->api . 'users.delete' )
-		/*$response = Request::post( 'http://localhost:3000/api/v1/users.delete' )
-			->body(array('userId' => $this->id))
-			->send();*/
-		$response = Request::post( 'http://localhost:3000/api/v1/users.delete' )
+		$response = Request::post( $this->api . 'users.delete' )
 			->body(array('username' => $args['realName']))
 			->send();
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
@@ -170,31 +151,40 @@ class User extends Client {
 		return $response;
 	}
 
+	public function userid($uname) {
+		$response = Request::get( 'http://localhost:3000/api/v1/users.info?username=' . $uname )->send();
+		return $response->body->user->_id;
+	}
+
+	public function get_group($args) {
+		$response = Request::get( $this->api . 'groups.info?roomName=' . $args )->send();
+		if(isset($response->body->group->_id))
+			return $response->body->group->_id;
+		else {
+			return $this->create_group($args);
+		}
+	}
+
 	public function create_group($args) {
 		$bodydata=array(
 			'name' => $args
 		);
 		if (isset($this->customFields))
 			$bodydata['customFields'] = json_decode(json_encode($this->customFields), JSON_FORCE_OBJECT);
-//		$response = Request::post( $this->api . 'users.create' )
-		$response = Request::post( 'http://localhost:3000/api/v1/groups.create' )
+		$response = Request::post( $this->api . 'groups.create' )
 			->body($bodydata)
 			->send();
 //		echo json_encode($response);
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
-			$this->id = $response->body->user->_id;
-			return $response->body->user;
+//			$this->id = $response->body->group->_id;
+			return $response->body->group->_id;
 		} else {
-			echo( $response->body->error . "\n" );
+//			echo( $response->body->error . "\n" );
 			return false;
 		}
 	}
 
-	/*public function create_group($args) {
-		$response = Request::post( 'http://localhost:3000/api/v1/groups.create' )
-			->body($bodydata)
-			->send();
-	}*/
+
 
 
 	public static function users() {
