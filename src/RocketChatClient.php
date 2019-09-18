@@ -8,8 +8,8 @@ class Client{
 
 	public $api;
 
-	function __construct(){
-		$this->api = ROCKET_CHAT_INSTANCE . REST_API_ROOT;
+	function __construct($url){
+		$this->api = $url;
 
 		// set template request to send and expect JSON
 		$tmp = Request::init()
