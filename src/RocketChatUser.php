@@ -14,8 +14,8 @@ class User extends Client {
 	public $email;
 	public $customFields;
   
-	public function __construct($username, $password, $fields = array()){
-		parent::__construct();
+	public function __construct($url, $username, $password, $fields = array()){
+		parent::__construct($url);
 		$this->username = $username;
 		$this->password = $password;
 		if( isset($fields['nickname']) ) {
