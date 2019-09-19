@@ -8,11 +8,8 @@ class Client{
 
 	public $api;
 
-	function __construct(){
-		global $prefs;
-		define('REST_API_ROOT', '/api/v1/');
-		define('ROCKET_CHAT_INSTANCE', $prefs['tp_synergiq-internal_tikirocketchat_url']);
-		$this->api = ROCKET_CHAT_INSTANCE . REST_API_ROOT;
+	function __construct($url){
+		$this->api = $url;
 
 		// set template request to send and expect JSON
 		$tmp = Request::init()
