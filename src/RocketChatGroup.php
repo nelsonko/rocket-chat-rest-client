@@ -13,18 +13,24 @@ class Group extends Client {
 
 	public function __construct($url, $name, $members = array()){
 		parent::__construct($url);
+		if( is_array($name) ) {
+			$name = (object) $name;
+		}
 		if( is_string($name) ) {
 			$this->name = $name;
-		} else if( isset($name->_id) ) {
-			$this->name = $name->name;
-			$this->id = $name->_id;
+		} else {
+			if( isset($name->_id) ) {
+				$this->id = $name->_id;
+			}
+			if( isset($name->name) ) {
+				$this->name = $name->name;
+			}
 		}
 		foreach($members as $member){
 			if( is_a($member, '\RocketChat\User') ) {
 				$this->members[] = $member;
 			} else if( is_string($member) ) {
-				// TODO
-				$this->members[] = new User($member);
+				$this->members[] = new User($url, $member, '');
 			}
 		}
 	}
@@ -36,9 +42,7 @@ class Group extends Client {
 		// get user ids for members
 		$members_id = array();
 		foreach($this->members as $member) {
-			if( is_string($member) ) {
-				$members_id[] = $member;
-			} else if( isset($member->username) && is_string($member->username) ) {
+			if( isset($member->username) && is_string($member->username) ) {
 				$members_id[] = $member->username;
 			}
 		}
@@ -59,7 +63,7 @@ class Group extends Client {
 	* Retrieves the information about the private group, only if you’re part of the group.
 	*/
 	public function info() {
-		$response = Request::get( $this->api . 'groups.info?roomId=' . $this->id )->send();
+		$response = Request::get( $this->api . 'groups.info?roomName=' . $this->name )->send();
 
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			$this->id = $response->body->group->_id;
@@ -108,10 +112,15 @@ class Group extends Client {
 	* Deletes the private group.
 	*/
 	public function delete(){
-		$response = Request::post( $this->api . 'groups.delete' )
-			->body(array('roomId' => $this->id))
-			->send();
-
+		if (!empty($this->id)) {
+			$response = Request::post( $this->api . 'groups.delete' )
+				->body(array('roomId' => $this->id))
+				->send();
+		} else {
+			$response = Request::post( $this->api . 'groups.delete' )
+				->body(array('roomName' => $this->name))
+				->send();
+		}
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			return true;
 		} else {
@@ -133,7 +142,7 @@ class Group extends Client {
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			return true;
 		} else {
-            throw $this->createExceptionFromResponse($response, "Could kick user $user from group");
+            throw $this->createExceptionFromResponse($response, "Could not kick user $user from group");
 		}
 	}
 
@@ -188,6 +197,25 @@ class Group extends Client {
 			return true;
 		} else {
             throw $this->createExceptionFromResponse($response, "Could not remove user $user as owner of private group");
+		}
+	}
+
+	/**
+	 * Renames a group
+	 */
+	public function rename( $newname ) {
+		if (empty($this->id)) {
+			$this->info();
+		}
+
+		$response = Request::post( $this->api . 'groups.rename' )
+			->body(array('roomId' => $this->id, 'name' => $newname))
+			->send();
+
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			return true;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not rename private group");
 		}
 	}
 }

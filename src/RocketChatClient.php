@@ -29,14 +29,6 @@ class Client{
     }
 
 	/**
-	* Get version information. This simple method requires no authentication.
-	*/
-	public function version() {
-		$response = \Httpful\Request::get( $this->api . 'info' )->send();
-		return $response->body->info->version;
-	}
-
-	/**
 	* Quick information about the authenticated user.
 	*/
 	public function me() {
@@ -57,7 +49,7 @@ class Client{
 	* only limited to what the callee has access to view.
 	*/
 	public function list_users(){
-		$response = Request::get( $this->api . 'users.list' )->send();
+		$response = Request::get( $this->api . 'users.list?count=0' )->send();
 
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			return $response->body->users;
@@ -70,7 +62,7 @@ class Client{
 	* List the private groups the caller is part of.
 	*/
 	public function list_groups() {
-		$response = Request::get( $this->api . 'groups.list' )->send();
+		$response = Request::get( $this->api . 'groups.list?count=0' )->send();
 
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			$groups = array();
@@ -84,10 +76,27 @@ class Client{
 	}
 
 	/**
+	 * List all private groups
+	 */
+	public static function list_all_groups($url) {
+		$response = Request::get( $url . 'groups.listAll?count=0' )->send();
+
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			$groups = array();
+			foreach($response->body->groups as $group){
+				$groups[] = new Group($url, $group);
+			}
+			return $groups;
+		} else {
+			throw self::createExceptionFromResponse($response, "Could not list groups");
+		}
+	}
+
+	/**
 	* List the channels the caller has access to.
 	*/
 	public function list_channels() {
-		$response = Request::get( $this->api . 'channels.list' )->send();
+		$response = Request::get( $this->api . 'channels.list?count=0' )->send();
 
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			$groups = array();
@@ -99,5 +108,4 @@ class Client{
             throw $this->createExceptionFromResponse($response, "Could not list channels");
 		}
 	}
-
 }

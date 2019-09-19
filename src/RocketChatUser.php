@@ -29,7 +29,7 @@ class User extends Client {
 	 * Gets a user’s information, limited to the caller’s permissions.
 	 */
 	public function info() {
-		$response = Request::get( $this->api . 'users.info?userId=' . $this->id )->send();
+		$response = Request::get( $this->api . 'users.info?username=' . $this->username )->send();
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			$this->id = $response->body->user->_id;
 			$this->nickname = $response->body->user->name;
@@ -79,11 +79,9 @@ class User extends Client {
 			->body($bodydata)
 			->send();
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
-//			$this->id = $response->body->user->_id;
-			return $response->body->user->_id;
+			return $response->body->user;
 		} else {
-//			echo( $response->body->error . "\n" );
-			return false;
+			throw $this->createExceptionFromResponse($response, "Could not create new user");
 		}
 	}
 
@@ -92,13 +90,15 @@ class User extends Client {
 	 * for data we have to send json-object so we use json_decode with inner json_encode
 	 * using the attributes of this class as update-values
 	 */
-	public function update($rc_display_name, $rc_username, 	$id) {
+	public function update($new_display_name, $new_username, $new_email) {
 
+		if (empty($this->id)) {
+			$this->info();
+		}
 		$response = Request::post( $this->api . 'users.update' )
 			->body(array(
-				'userId' => $id,
-				'data' => json_decode(json_encode(array('name' => $rc_display_name, 'username' => $rc_username), JSON_FORCE_OBJECT)),
-				//'data' => json_decode(json_encode(array('name' => $this->nickname,'email'=>$this->email,'username'=>$this->username,'password'=>$this->password), JSON_FORCE_OBJECT)),
+				'userId' => $this->id,
+				'data' => json_decode(json_encode(array('name' => $new_display_name, 'username' => $new_username, 'email' => $new_email), JSON_FORCE_OBJECT)),
 			))
 			->send();
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
@@ -112,13 +112,9 @@ class User extends Client {
 	/**
 	 * Deletes an existing user.
 	 */
-	public function delete($args) {
-		// get user ID if needed
-		/*if( !isset($this->id) ){
-			$this->me();
-		}*/
+	public function delete() {
 		$response = Request::post( $this->api . 'users.delete' )
-			->body(array('username' => $args['realName']))
+			->body(array('username' => $this->username))
 			->send();
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			return true;
@@ -127,21 +123,15 @@ class User extends Client {
 		}
 	}
 
-
-	public static function getStatus($user) {
+	public function getStatus($user) {
 		// Get User Presence
-		$response = Request::get( 'http://localhost:3000/api/v1/users.getPresence?username='.$user )->send();
+		$response = Request::get( $this->api . 'users.getPresence?username='.$user )->send();
 		$presence = $response->body->presence;
-
-		// Get User Info u5KDkZsLEpHr8JrRc
-		// $response = Request::get( 'http://localhost:3000/api/v1/users.info?userId='.$user )->send();
-		// $presence = $response->body->user->statusText;
-
 		return $presence;
 	}
 
-	public static function setStatus($rc_user, $set) {
-		$response = Request::post( 'http://localhost:3000/api/v1/users.setStatus' )
+	public function setStatus($rc_user, $set) {
+		$response = Request::post( $this->api  . 'users.setStatus' )
 			->body(array(
 				'userId' => $rc_user,
 				'status' => $set,
@@ -151,76 +141,42 @@ class User extends Client {
 		return $response;
 	}
 
-	public function userid($uname) {
-		$response = Request::get( 'http://localhost:3000/api/v1/users.info?username=' . $uname )->send();
-		return $response->body->user->_id;
-	}
-
-	public function get_group($args) {
-		$response = Request::get( $this->api . 'groups.info?roomName=' . $args )->send();
-		if(isset($response->body->group->_id))
-			return $response->body->group->_id;
-		else {
-			return $this->create_group($args);
-		}
-	}
-
-	public function create_group($args) {
-		$bodydata=array(
-			'name' => $args
-		);
-		if (isset($this->customFields))
-			$bodydata['customFields'] = json_decode(json_encode($this->customFields), JSON_FORCE_OBJECT);
-		$response = Request::post( $this->api . 'groups.create' )
-			->body($bodydata)
-			->send();
-//		echo json_encode($response);
-		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
-//			$this->id = $response->body->group->_id;
-			return $response->body->group->_id;
+	public function invite($groupName)
+	{
+		$response = Request::get($this->api . 'groups.info?roomName=' . $groupName)->send();
+		if (isset($response->body->group->_id)) {
+			$groupId = $response->body->group->_id;
 		} else {
-//			echo( $response->body->error . "\n" );
-			return false;
+			throw $this->createExceptionFromResponse($response, "Could not invite user to group");
 		}
-	}
-
-	public function invite($userId, $groupId) {
+		if (empty($this->id)) {
+			$this->info();
+		}
 		$response = Request::post( $this->api . 'groups.invite' )
 			->body(array(
-				'userId' => $userId,
+				'userId' => $this->id,
 				'roomId' => $groupId
 			))
 			->send();
 		return $response;
 	}
 
-	public function kick($userId, $groupId) {
+	public function kick($groupName) {
+		$response = Request::get($this->api . 'groups.info?roomName=' . $groupName)->send();
+		if (isset($response->body->group->_id)) {
+			$groupId = $response->body->group->_id;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not kick user from group");
+		}
+		if (empty($this->id)) {
+			$this->info();
+		}
 		$response = Request::post( $this->api . 'groups.kick' )
 			->body(array(
-				'userId' => $userId,
+				'userId' => $this->id,
 				'roomId' => $groupId
 			))
 			->send();
 		return $response;
 	}
-
-
-	public static function users() {
-		// Get User Presence
-		$rc_users = array();
-		$users = Request::get( 'http://localhost:3000/api/v1/users.list' )->send();
-		foreach($users->body->users AS $user) {
-			if ($user->username != 'admin' && $user->username != 'rocket.cat') {
-				/*echo $user->username;
-				echo $user->name;
-				print_r($user->emails[0]->address);
-				echo "\n";*/
-				$rc_users[] = $user->name;
-			}
-		}
-		return $rc_users;
-	}
-
-
-
 }
