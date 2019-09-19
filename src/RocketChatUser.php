@@ -184,7 +184,25 @@ class User extends Client {
 		}
 	}
 
+	public function invite($userId, $groupId) {
+		$response = Request::post( $this->api . 'groups.invite' )
+			->body(array(
+				'userId' => $userId,
+				'roomId' => $groupId
+			))
+			->send();
+		return $response;
+	}
 
+	public function kick($userId, $groupId) {
+		$response = Request::post( $this->api . 'groups.kick' )
+			->body(array(
+				'userId' => $userId,
+				'roomId' => $groupId
+			))
+			->send();
+		return $response;
+	}
 
 
 	public static function users() {
