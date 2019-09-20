@@ -63,6 +63,18 @@ class User extends Client {
 	}
 
 	/**
+	 * Logout - invalidates token
+	 */
+	public function logout() {
+		$response = Request::post( $this->api . 'logout' )->send();
+		if( $response->code == 200 && isset($response->body->status) && $response->body->status == 'success' ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Create a new user.
 	 * for customFields we have to send json-object so we use json_decode with inner json_encode
 	 */
