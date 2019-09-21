@@ -191,4 +191,23 @@ class User extends Client {
 			->send();
 		return $response;
 	}
+
+	/**
+	 * Become owner of the private group.
+	 */
+	public function beGroupOwner( $groupId ) {
+		if (empty($this->id)) {
+			$this->info();
+		}
+
+		$response = Request::post( $this->api . 'groups.addOwner' )
+			->body(array('roomId' => $groupId, 'userId' => $this->id))
+			->send();
+
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			return true;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not add user as owner of private group");
+		}
+	}
 }

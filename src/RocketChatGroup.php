@@ -218,5 +218,43 @@ class Group extends Client {
 			throw $this->createExceptionFromResponse($response, "Could not rename private group");
 		}
 	}
+
+	/**
+	 * Set Topic
+	 */
+	public function setTopic( $topic ) {
+		if (empty($this->id)) {
+			$this->info();
+		}
+
+		$response = Request::post( $this->api . 'groups.setTopic' )
+			->body(array('roomId' => $this->id, 'topic' => $topic))
+			->send();
+
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			return true;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not set the name of a private group");
+		}
+	}
+
+	/**
+	 * Leave group (of calling user)
+	 */
+	public function leave() {
+		if (empty($this->id)) {
+			$this->info();
+		}
+
+		$response = Request::post( $this->api . 'groups.leave' )
+			->body(array('roomId' => $this->id))
+			->send();
+
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			return true;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not leave private group");
+		}
+	}
 }
 
