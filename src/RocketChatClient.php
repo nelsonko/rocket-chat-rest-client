@@ -108,4 +108,16 @@ class Client{
             throw $this->createExceptionFromResponse($response, "Could not list channels");
 		}
 	}
+
+	/**
+	 * List all permissions
+	 */
+	public function list_permissions() {
+		$response = Request::get( $this->api . 'permissions.listAll' )->send();
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			return $response;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not list permissions");
+		}
+	}
 }

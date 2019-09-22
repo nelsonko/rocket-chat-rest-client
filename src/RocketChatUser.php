@@ -103,7 +103,6 @@ class User extends Client {
 	 * using the attributes of this class as update-values
 	 */
 	public function update($new_display_name, $new_username, $new_email) {
-
 		if (empty($this->id)) {
 			$this->info();
 		}
@@ -135,19 +134,28 @@ class User extends Client {
 		}
 	}
 
-	public function getStatus($user) {
+	public function getStatus() {
 		// Get User Presence
-		$response = Request::get( $this->api . 'users.getPresence?username='.$user )->send();
+		$response = Request::get( $this->api . 'users.getPresence?username='.$this->username )->send();
 		$presence = $response->body->presence;
 		return $presence;
 	}
 
-	public function setStatus($rc_user, $set) {
+	/**
+	 * Set status for currently logged in user (Warning: does not take userId param, not yet anyway)
+	 * @param $presence Either online, offline, away or busy
+	 * @param string $message Custom status message to add
+	 * @return \Httpful\Response
+	 * @throws \Httpful\Exception\ConnectionErrorException
+	 */
+	public function setStatus($presence, $message = '') {
+		if (empty($this->id)) {
+			$this->info();
+		}
 		$response = Request::post( $this->api  . 'users.setStatus' )
 			->body(array(
-				'userId' => $rc_user,
-				'status' => $set,
-				'message' => $set,
+				'status' => $presence,
+				'message' => $message
 			))
 			->send();
 		return $response;
