@@ -63,10 +63,20 @@ class User extends Client {
 	}
 
 	/**
-	 * Logout - invalidates token
+	 * Invalidates current token and optionally additional token
+	 * @param string $token Provides additional token to invalidate, a session token usually
+	 * @return bool
+	 * @throws \Httpful\Exception\ConnectionErrorException
 	 */
-	public function logout() {
+	public function logout($token = '') {
 		$response = Request::post( $this->api . 'logout' )->send();
+		if ($token) {
+			$tmp = Request::init()
+				->addHeader('X-Auth-Token', $token)
+				->addHeader('X-User-Id', $this->id);
+			Request::ini( $tmp );
+			$response = Request::post( $this->api . 'logout' )->send();
+		}
 		if( $response->code == 200 && isset($response->body->status) && $response->body->status == 'success' ) {
 			return true;
 		} else {
