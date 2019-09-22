@@ -159,7 +159,7 @@ class User extends Client {
 		if (isset($response->body->group->_id)) {
 			$groupId = $response->body->group->_id;
 		} else {
-			throw $this->createExceptionFromResponse($response, "Could not invite user to group");
+			throw $this->createExceptionFromResponse($response, "Could not get info about the group");
 		}
 		if (empty($this->id)) {
 			$this->info();
@@ -170,7 +170,11 @@ class User extends Client {
 				'roomId' => $groupId
 			))
 			->send();
-		return $response;
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			return $response;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not invite user to group");
+		}
 	}
 
 	public function kick($groupName) {
@@ -178,7 +182,7 @@ class User extends Client {
 		if (isset($response->body->group->_id)) {
 			$groupId = $response->body->group->_id;
 		} else {
-			throw $this->createExceptionFromResponse($response, "Could not kick user from group");
+			throw $this->createExceptionFromResponse($response, "Could not get info about the group");
 		}
 		if (empty($this->id)) {
 			$this->info();
@@ -189,7 +193,11 @@ class User extends Client {
 				'roomId' => $groupId
 			))
 			->send();
-		return $response;
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			return $response;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not kick user from group");
+		}
 	}
 
 	/**

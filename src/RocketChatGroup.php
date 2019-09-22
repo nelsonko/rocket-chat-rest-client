@@ -132,7 +132,10 @@ class Group extends Client {
 	* Removes a user from the private group.
 	*/
 	public function kick( $user ){
-		// get group and user ids
+		if (empty($this->id)) {
+			$this->info();
+		}
+
 		$userId = is_string($user) ? $user : $user->id;
 
 		$response = Request::post( $this->api . 'groups.kick' )
@@ -150,6 +153,9 @@ class Group extends Client {
 	 * Adds user to the private group.
 	 */
 	public function invite( $user ) {
+		if (empty($this->id)) {
+			$this->info();
+		}
 
 		$userId = is_string($user) ? $user : $user->id;
 
@@ -168,6 +174,9 @@ class Group extends Client {
 	 * Adds owner to the private group.
 	 */
 	public function addOwner( $user ) {
+		if (empty($this->id)) {
+			$this->info();
+		}
 
 		$userId = is_string($user) ? $user : $user->id;
 
@@ -186,6 +195,9 @@ class Group extends Client {
 	 * Removes owner of the private group.
 	 */
 	public function removeOwner( $user ) {
+		if (empty($this->id)) {
+			$this->info();
+		}
 
 		$userId = is_string($user) ? $user : $user->id;
 
