@@ -236,4 +236,14 @@ class User extends Client {
 			throw $this->createExceptionFromResponse($response, "Could not add user as owner of private group");
 		}
 	}
+
+	public function unread_count() {
+		$response = Request::get( $this->api . 'subscriptions.get' )->send();
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			return $response->body->update;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not get user's information");
+		}
+	}
+	
 }
