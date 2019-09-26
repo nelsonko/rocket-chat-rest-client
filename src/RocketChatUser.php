@@ -245,5 +245,13 @@ class User extends Client {
 			throw $this->createExceptionFromResponse($response, "Could not get user's information");
 		}
 	}
-	
+
+	public function get_preferences() {
+		$response = Request::get( $this->api . 'users.getPreferences' )->send();
+		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
+			return $response->body->preferences;
+		} else {
+			throw $this->createExceptionFromResponse($response, "Could not get user's information");
+		}
+	}
 }
