@@ -246,6 +246,14 @@ class User extends Client {
 		}
 	}
 
+	public function avatar_update($path) {
+		$response = Request::post( $this->api . 'users.setAvatar' )
+			->body(array('avatarUrl' => $path))
+			->send();
+		$return = $response;
+		return $return;
+	}
+
 	public function get_preferences() {
 		$response = Request::get( $this->api . 'users.getPreferences' )->send();
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
