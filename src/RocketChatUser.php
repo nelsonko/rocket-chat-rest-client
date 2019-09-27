@@ -259,7 +259,7 @@ class User extends Client {
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			return $response->body->preferences;
 		} else {
-			throw $this->createExceptionFromResponse($response, "Could not get user's information");
+			return false; // maybe no preferences set yet
 		}
 	}
 }
