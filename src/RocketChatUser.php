@@ -33,7 +33,7 @@ class User extends Client {
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			$this->id = $response->body->user->_id;
 			$this->nickname = $response->body->user->name;
-			$this->email = $response->body->user->emails[0]->address;
+			//$this->email = $response->body->user->emails[0]->address;
 			return $response->body;
 		} else {
 			throw $this->createExceptionFromResponse($response, "Could not get user's information");
