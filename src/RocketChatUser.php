@@ -246,9 +246,13 @@ class User extends Client {
 		}
 	}
 
-	public function avatar_update($path) {
+	public function avatar_update($path, $username = '') {
+		$input = ['avatarUrl' => $path];
+		if ($username) {
+			$input['username'] = $username;
+		}
 		$response = Request::post( $this->api . 'users.setAvatar' )
-			->body(array('avatarUrl' => $path))
+			->body($input)
 			->send();
 		$return = $response;
 		return $return;
