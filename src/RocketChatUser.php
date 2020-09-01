@@ -237,8 +237,13 @@ class User extends Client {
 		}
 	}
 
-	public function unread_count() {
-		$response = Request::get( $this->api . 'subscriptions.get' )->send();
+	public function unread_count($since = '') {
+		if (!$since) {
+			$response = Request::get( $this->api . 'subscriptions.get' )->send();
+		} else {
+			$since_iso = date("c", $since);
+			$response = Request::get( $this->api . 'subscriptions.get?updatedSince=' . $since_iso )->send();
+		}
 		if( $response->code == 200 && isset($response->body->success) && $response->body->success == true ) {
 			return $response->body->update;
 		} else {
